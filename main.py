@@ -23,6 +23,19 @@ async def list_books():
     conn.close()
     return {"books": [dict(row) for row in books]}
 
+@app.get("/joined_data", response_class=JSONResponse)
+async def joined_data():
+    # Example join between Books and Authors. Modify field names and join conditions as per your schema.
+    conn = get_db_connection()
+    query = """
+        SELECT b.Title, b.ISBN, a.Name as AuthorName
+        FROM Books b
+        JOIN Authors a ON b.Author_ID = a.Author_ID;
+    """
+    results = conn.execute(query).fetchall()
+    conn.close()
+    return {"joined_data": [dict(row) for row in results]}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
