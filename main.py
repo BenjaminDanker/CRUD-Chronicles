@@ -50,6 +50,33 @@ async def add_book(title: str = Form(...), isbn: str = Form(...), author_id: int
     conn.close()
     return RedirectResponse(url="/", status_code=303)
 
+@app.post("/update_book/{book_id}")
+async def update_book(book_id: int, title: str = Form(...), isbn: str = Form(...), author_id: int = Form(...), publisher: str = Form(...)):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            "UPDATE Books SET Title = ?, ISBN = ?, Author_ID = ?, Publisher = ? WHERE Book_ID = ?",
+            (title, isbn, author_id, publisher, book_id)
+        )
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+    conn.close()
+    return RedirectResponse(url="/", status_code=303)
+
+@app.post("/delete_book/{book_id}")
+async def delete_book(book_id: int):
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM Books WHERE Book_ID = ?", (book_id,))
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+    conn.close()
+    return RedirectResponse(url="/", status_code=303)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
