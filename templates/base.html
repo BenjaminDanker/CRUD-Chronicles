@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Community Library Management System{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Community Library Management System</h1>
+        <nav>
+            <button onclick="location.href='/'">Home</button>
+            <button onclick="location.href='/books'">Books</button>
+            <button onclick="location.href='/joined_data'">Joined Data</button>
+        </nav>
+        <hr>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <hr>
+        <p>&copy; 2025 Community Library</p>
+    </footer>
+</body>
+</html>
