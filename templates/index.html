@@ -7,8 +7,24 @@
 <body>
     <h1>Community Library Management System</h1>
     <p>{{ message }}</p>
-    <!-- Pre-defined buttons for later functionality -->
     <button onclick="location.href='/books'">View Books</button>
     <button onclick="location.href='/joined_data'">View Joined Data</button>
+
+    <h2>Add New Book</h2>
+    <form action="/add_book" method="post">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="isbn">ISBN:</label>
+        <input type="text" id="isbn" name="isbn" required><br><br>
+        
+        <label for="author_id">Author ID:</label>
+        <input type="number" id="author_id" name="author_id" required><br><br>
+
+        <label for="publisher">Publisher:</label>
+        <input type="text" id="publisher" name="publisher" required><br><br>
+
+        <input type="submit" value="Add Book">
+    </form>
 </body>
 </html>
