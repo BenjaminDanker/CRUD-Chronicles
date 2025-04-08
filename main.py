@@ -1,7 +1,6 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastapi import Request
 import sqlite3
 
 app = FastAPI()
@@ -16,20 +15,22 @@ def get_db_connection():
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "message": "Welcome to the Community Library Management System"})
 
-@app.get("/books", response_class=JSONResponse)
-async def list_books():
+# Updated /books endpoint to render UI
+@app.get("/books", response_class=HTMLResponse)
+async def list_books(request: Request):
     conn = get_db_connection()
     books = conn.execute("SELECT * FROM Books").fetchall()
     conn.close()
-    return {"books": [dict(row) for row in books]}
+    books_list = [dict(book) for book in books]
+    return templates.TemplateResponse("books.html", {"request": request, "books": books_list})
 
 @app.get("/joined_data", response_class=JSONResponse)
 async def joined_data():
     conn = get_db_connection()
     query = """
-        SELECT b.Title, b.ISBN, a.Name as AuthorName
+        SELECT b.Title, b.ISBN, a.FirstName || ' ' || a.LastName as AuthorName
         FROM Books b
-        JOIN Authors a ON b.Author_ID = a.Author_ID;
+        JOIN Authors a ON b.AuthorID = a.AuthorID;
     """
     results = conn.execute(query).fetchall()
     conn.close()
@@ -40,7 +41,7 @@ async def add_book(title: str = Form(...), isbn: str = Form(...), author_id: int
     conn = get_db_connection()
     try:
         conn.execute(
-            "INSERT INTO Books (Title, ISBN, Author_ID, Publisher) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Books (Title, ISBN, AuthorID, Publisher) VALUES (?, ?, ?, ?)",
             (title, isbn, author_id, publisher)
         )
         conn.commit()
@@ -50,13 +51,13 @@ async def add_book(title: str = Form(...), isbn: str = Form(...), author_id: int
     conn.close()
     return RedirectResponse(url="/", status_code=303)
 
-@app.post("/update_book/{book_id}")
-async def update_book(book_id: int, title: str = Form(...), isbn: str = Form(...), author_id: int = Form(...), publisher: str = Form(...)):
+@app.post("/update_book/{isbn}")
+async def update_book(isbn: str, title: str = Form(...), new_isbn: str = Form(...), author_id: int = Form(...), publisher: str = Form(...)):
     conn = get_db_connection()
     try:
         conn.execute(
-            "UPDATE Books SET Title = ?, ISBN = ?, Author_ID = ?, Publisher = ? WHERE Book_ID = ?",
-            (title, isbn, author_id, publisher, book_id)
+            "UPDATE Books SET Title = ?, ISBN = ?, AuthorID = ?, Publisher = ? WHERE ISBN = ?",
+            (title, new_isbn, author_id, publisher, isbn)
         )
         conn.commit()
     except Exception as e:
@@ -65,11 +66,11 @@ async def update_book(book_id: int, title: str = Form(...), isbn: str = Form(...
     conn.close()
     return RedirectResponse(url="/", status_code=303)
 
-@app.post("/delete_book/{book_id}")
-async def delete_book(book_id: int):
+@app.post("/delete_book/{isbn}")
+async def delete_book(isbn: str):
     conn = get_db_connection()
     try:
-        conn.execute("DELETE FROM Books WHERE Book_ID = ?", (book_id,))
+        conn.execute("DELETE FROM Books WHERE ISBN = ?", (isbn,))
         conn.commit()
     except Exception as e:
         conn.close()
