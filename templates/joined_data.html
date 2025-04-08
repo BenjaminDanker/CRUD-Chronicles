@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Joined Data{% endblock %}
+
+{% block content %}
+<h2>Joined Data: Books with Authors</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>ISBN</th>
+            <th>Author Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in joined_data %}
+        <tr>
+            <td>{{ item.Title }}</td>
+            <td>{{ item.ISBN }}</td>
+            <td>{{ item.AuthorName }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import sqlite3
 
@@ -15,7 +15,6 @@ def get_db_connection():
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "message": "Welcome to the Community Library Management System"})
 
-# Updated /books endpoint to render UI
 @app.get("/books", response_class=HTMLResponse)
 async def list_books(request: Request):
     conn = get_db_connection()
@@ -24,8 +23,9 @@ async def list_books(request: Request):
     books_list = [dict(book) for book in books]
     return templates.TemplateResponse("books.html", {"request": request, "books": books_list})
 
-@app.get("/joined_data", response_class=JSONResponse)
-async def joined_data():
+# Updated /joined_data endpoint to render an HTML UI for join results
+@app.get("/joined_data", response_class=HTMLResponse)
+async def joined_data(request: Request):
     conn = get_db_connection()
     query = """
         SELECT b.Title, b.ISBN, a.FirstName || ' ' || a.LastName as AuthorName
@@ -34,7 +34,8 @@ async def joined_data():
     """
     results = conn.execute(query).fetchall()
     conn.close()
-    return {"joined_data": [dict(row) for row in results]}
+    joined_list = [dict(row) for row in results]
+    return templates.TemplateResponse("joined_data.html", {"request": request, "joined_data": joined_list})
 
 @app.post("/add_book")
 async def add_book(title: str = Form(...), isbn: str = Form(...), author_id: int = Form(...), publisher: str = Form(...)):
